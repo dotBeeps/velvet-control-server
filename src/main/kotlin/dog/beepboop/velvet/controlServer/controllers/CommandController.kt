@@ -1,0 +1,47 @@
+package dog.beepboop.velvet.controlServer.controllers
+
+import dog.beepboop.velvet.controlServer.models.UIActionUpdate
+import dog.beepboop.velvet.controlServer.repositories.ActionRepo
+import dog.beepboop.velvet.controlServer.services.CooldownService
+import dog.beepboop.velvet.controlServer.services.JwtService
+import dog.beepboop.velvet.controlServer.services.TwitchService
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import mu.KotlinLogging
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
+import java.util.*
+
+@RestController
+class CommandController(val twitchService: TwitchService, val cooldownService: CooldownService, val actionRepo: ActionRepo) {
+    private val logger = KotlinLogging.logger {}
+
+    @PostMapping("/commands/{channel}/{category}/{command}")
+    fun invokeCommand(@PathVariable channel: String, @PathVariable category: String, @PathVariable command: String): ResponseEntity<*> {
+        if (cooldownService.getCooldown(channel,category,command) <= 0) {
+            val action = actionRepo.findByChannelIdAndCategoryAndCommand(channel,category,command)
+            action?.let {
+                val scriptStr = Json.encodeToString(action.script)
+                twitchService.sendPubSubBroadcast(channel, scriptStr)
+                cooldownService.setLastUse(channel,category,command, Date.from(Instant.now()))
+                val uiStr = Json.encodeToString(UIActionUpdate(
+                    useTime = Instant.now().epochSecond,
+                    category = it.category,
+                    command = it.command
+                ))
+                logger.info { "Executing ${scriptStr}" }
+                twitchService.sendPubSubBroadcast(channel, uiStr)
+                return ResponseEntity.ok("Confirmed.")
+            }
+            return ResponseEntity("Couldn't find command.", HttpStatus.NOT_FOUND)
+        } else {
+            return ResponseEntity(cooldownService.getCooldown(channel,category,command), HttpStatus.LOCKED)
+        }
+    }
+}
