@@ -52,6 +52,17 @@ jobs:
     environment: production
 
     steps:
+    - name: Configure AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+
+    - name: Get Runner IP
+      uses: haythem/public-ip@v1.3
+      id: ip
+
     - name: Checkout
       uses: actions/checkout@v4
 
@@ -67,10 +78,26 @@ jobs:
     - name: Gradle Build
       run: ./gradlew build
 
+    - name: Whitelist Runner IP
+      run: |
+        aws ec2 authorize-security-group-ingress \
+        --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+        --protocol tcp \
+        --port 22 \
+        --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
     - name: Deploy to EC2
       uses: easingthemes/ssh-deploy@v5.0.3
       env:
         SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-        SOURCE: "./build/libs"
+        SOURCE: "build/libs"
         REMOTE_HOST: ${{ secrets.EC2_HOST }}
         REMOTE_USER: ${{ secrets.EC2_USER }}
+
+    - name: Revoke Runner IP
+      run: |
+        aws ec2 revoke-security-group-ingress \
+        --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+        --protocol tcp \
+        --port 22 \
+        --cidr ${{ steps.ip.outputs.ipv4 }}/32
