@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dog.beepboop"
-version = "2024.3.1"
+version = "0.0.1"
 description = "VelvetControlServer"
 
 java {
