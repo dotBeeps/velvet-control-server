@@ -12,7 +12,7 @@ import java.util.Base64
 import java.util.Date
 
 @Service
-class JwtService(@Value("\${twitch.auth.extension.secret}") private val secretKeyString: String) {
+class JwtService(@Value("\${twitchJwtSecret}") private val secretKeyString: String) {
 
     private val decodedKey = Base64.getDecoder().decode(secretKeyString)
     private val secretKey = Keys.hmacShaKeyFor(decodedKey)

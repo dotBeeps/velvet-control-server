@@ -1,40 +1,44 @@
 package dog.beepboop.velvet.controlServer.models
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperFieldModel
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTyped
 import kotlinx.serialization.Serializable
-import org.bson.types.ObjectId
-import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.data.mongodb.core.mapping.Field
 import java.util.Date
 
-@Document("actions")
-data class Action (
-    @Id
-    val id: ObjectId = ObjectId(),
-    @Field("channel_id")
-    val channelId: String = "",
-    val category: String = "",
-    val name: String = "",
-    val command: String = "",
-    val cooldown: Int = 0,
-    val script: Script,
-    @Field("last_use")
-    val lastUse: Date = Date(0)
+@DynamoDBTable(tableName = "actions")
+data class Action(@DynamoDBHashKey
+    var id: String = "",
+    @DynamoDBAttribute
+    var channelId: String = "",
+    @DynamoDBAttribute
+    var category: String = "",
+    @DynamoDBAttribute
+    var name: String = "",
+    @DynamoDBAttribute
+    var command: String = "",
+    @DynamoDBAttribute
+    var cooldown: Int = 0,
+    @DynamoDBAttribute
+    var script: Script = Script(),
+    @DynamoDBAttribute(attributeName = "last_use")
+    @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.N)
+    var lastUse: Date = Date(0)
 )
 
 @Serializable
 data class Script (
-    @Field("Command")
-    val command: String = "",
-    @Field("Parameters")
-    val parameters: Map<String, Int>
+    @DynamoDBAttribute
+    var command: String = "",
+    @DynamoDBAttribute
+    var parameters: Map<String, Int> = mapOf()
 )
-
 data class ActionResponse (
     val name: String,
     val category: String,
     val command: String,
     val cooldown: Int,
-    @Field("last_use")
     val lastUse: Date
 )

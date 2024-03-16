@@ -21,11 +21,14 @@ class CooldownService(private val actionRepo: ActionRepo) {
     fun setCooldown(channelId: String, category: String, name: String, command: String = "", cooldown: Int = 0) {
         actionRepo.findByChannelIdAndCategoryAndCommand(channelId, category, name)?.let {
             // Update existing command.
-            actionRepo.save(it.copy(cooldown = cooldown))
+            actionRepo.save(it.copy(
+                cooldown = cooldown
+            ))
         } ?: run {
             // Insert new command.
             actionRepo.save(
                 Action(
+                    id = "${channelId}/${category}/${command}",
                     channelId = channelId,
                     category = category,
                     name = name,
@@ -39,7 +42,7 @@ class CooldownService(private val actionRepo: ActionRepo) {
 
     fun setLastUse(channelId: String, category: String, command: String, lastUse: Date) {
         actionRepo.findByChannelIdAndCategoryAndCommand(channelId, category, command)?.let {
-            actionRepo.save(it.copy(lastUse = lastUse))
+            actionRepo.save(it.copy(lastUse = it.lastUse))
         }
     }
 }
