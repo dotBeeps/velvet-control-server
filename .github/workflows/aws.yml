@@ -66,6 +66,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Get next version
+      uses: reecetech/version-increment@2023.10.2
+      id: version
+      with:
+        scheme: semver
+        increment: patch
+
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
@@ -76,28 +83,15 @@ jobs:
       uses: gradle/gradle-build-action@v3
 
     - name: Gradle Build
-      run: ./gradlew build
+      run: ./gradlew -Pversion=${{ steps.version.outputs.version }} -build
 
-    - name: Whitelist Runner IP
-      run: |
-        aws ec2 authorize-security-group-ingress \
-        --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-        --protocol tcp \
-        --port 22 \
-        --cidr ${{ steps.ip.outputs.ipv4 }}/32
-
-    - name: Deploy to EC2
-      uses: easingthemes/ssh-deploy@v5.0.3
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-        SOURCE: "build/libs"
-        REMOTE_HOST: ${{ secrets.EC2_HOST }}
-        REMOTE_USER: ${{ secrets.EC2_USER }}
-
-    - name: Revoke Runner IP
-      run: |
-        aws ec2 revoke-security-group-ingress \
-        --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-        --protocol tcp \
-        --port 22 \
-        --cidr ${{ steps.ip.outputs.ipv4 }}/32
+    - name: Deploy to Beanstalk
+      uses: einaregilsson/beanstalk-deploy@v21
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: velvet-control-server
+        environment_name: velvet-control-server-env
+        version_label: ${{ steps.version.outputs.version }}
+        region: us-east-2
+        deployment_package: build/libs/VelvetControlServer-${{ steps.version.outputs.version }}.jar
