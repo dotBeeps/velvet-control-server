@@ -3,17 +3,14 @@ package dog.beepboop.velvet.controlServer.controllers
 import dog.beepboop.velvet.controlServer.models.UIActionUpdate
 import dog.beepboop.velvet.controlServer.repositories.ActionRepo
 import dog.beepboop.velvet.controlServer.services.CooldownService
-import dog.beepboop.velvet.controlServer.services.JwtService
 import dog.beepboop.velvet.controlServer.services.TwitchService
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.util.*
@@ -35,7 +32,7 @@ class CommandController(val twitchService: TwitchService, val cooldownService: C
                     category = it.category,
                     command = it.command
                 ))
-                logger.info { "Executing ${scriptStr}" }
+                logger.info { "Executing $scriptStr" }
                 twitchService.sendPubSubBroadcast(channel, uiStr)
                 return ResponseEntity.ok("Confirmed.")
             }
