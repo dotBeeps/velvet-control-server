@@ -1,9 +1,11 @@
 package dog.beepboop.velvet.controlServer.repositories
 
 import dog.beepboop.velvet.controlServer.models.User
-import org.springframework.data.mongodb.repository.MongoRepository
+import org.socialsignin.spring.data.dynamodb.repository.EnableScan
+import org.springframework.data.repository.CrudRepository
 
-interface UserRepo : MongoRepository<User, String> {
+@EnableScan
+interface UserRepo : CrudRepository<User, String> {
     fun findByChannelId(channelId: String): User?
     fun findByChannelName(channelName: String): User?
     fun findAllByEnabled(enabled: Boolean): List<User>
