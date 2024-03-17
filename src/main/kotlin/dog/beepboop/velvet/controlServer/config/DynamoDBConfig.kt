@@ -25,6 +25,7 @@ class DynamoDBConfig(@Value("\${aws.key}") private val awsKey: String, @Value("\
 
     fun awsCredProvider(): AWSCredentialsProvider = AWSStaticCredentialsProvider(awsCredentials())
     @Bean
+    @Profile("local")
     fun awsCredentials(): AWSCredentials = BasicAWSCredentials(awsKey, awsSecret)
     @Primary
     @Bean
@@ -34,12 +35,12 @@ class DynamoDBConfig(@Value("\${aws.key}") private val awsKey: String, @Value("\
     fun dynamoDBMapper(amazonDynamoDB: AmazonDynamoDB, config: DynamoDBMapperConfig): DynamoDBMapper = DynamoDBMapper(amazonDynamoDB, config)
     @Bean("amazonDynamoDB")
     @Profile("local")
-    fun amazonDynamoDB(): AmazonDynamoDB {
+    fun amazonDynamoDBLocal(): AmazonDynamoDB {
         val dynamoDb = AmazonDynamoDBClientBuilder.standard().withCredentials(awsCredProvider()).withRegion(
             Regions.US_EAST_2).build()
         return dynamoDb
     }
     @Bean("amazonDynamoDB")
     @Profile("!local")
-    fun amazonDynamoDBCloud(): AmazonDynamoDB = AmazonDynamoDBClientBuilder.standard().withCredentials(InstanceProfileCredentialsProvider(true)).withRegion(Regions.US_EAST_2).build()
+    fun amazonDynamoDB(): AmazonDynamoDB = AmazonDynamoDBClientBuilder.standard().withCredentials(InstanceProfileCredentialsProvider(true)).withRegion(Regions.US_EAST_2).build()
 }
