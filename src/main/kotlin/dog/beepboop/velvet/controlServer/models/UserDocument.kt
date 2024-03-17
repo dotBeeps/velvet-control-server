@@ -1,18 +1,15 @@
 package dog.beepboop.velvet.controlServer.models
 
-import org.bson.types.ObjectId
-import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.data.mongodb.core.mapping.Field
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable
 
-@Document("users")
+@DynamoDBTable(tableName = "users")
 data class User (
-    @Id
-    val id: ObjectId = ObjectId(),
-    @Field("channel_name")
-    val channelName: String = "",
-    @Field("channel_id")
-    val channelId: String = "",
-    @Field("control_enabled")
-    val enabled: Boolean = false,
+    @DynamoDBAttribute(attributeName = "channel_name")
+    var channelName: String = "",
+    @DynamoDBHashKey(attributeName = "channel_id")
+    var channelId: String = "",
+    @DynamoDBAttribute(attributeName = "control_enabled")
+    var enabled: Boolean = false
 )

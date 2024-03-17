@@ -13,10 +13,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class TwitchService(
-    private val userRepo: UserRepo,
     private val jwtService: JwtService,
     @Value("\${twitch.auth.client.id}") private val clientId: String,
-    @Value("\${twitch.auth.client.secret}") private val clientSecret: String
+    @Value("\${twitchClientSecret}") private val clientSecret: String
 ) {
     private val logger = KotlinLogging.logger {}
     private val twitchClient = TwitchClientBuilder.builder()
@@ -25,22 +24,6 @@ class TwitchService(
         .withClientId(clientId)
         .withClientSecret(clientSecret)
         .build()
-
-    init {
-        // Enable listening to go live and go offline events for all users with extension enabled.
-        val users = userRepo.findAllByEnabled(true).map { user: User -> user.channelId }
-        twitchClient.clientHelper.enableStreamEventListener(users)
-    }
-
-    @EventSubscriber
-    fun onGoLiveEvent(goLiveEvent: ChannelGoLiveEvent) {
-
-    }
-
-    @EventSubscriber
-    fun onGoOfflineEvent(goOfflineEvent: ChannelGoOfflineEvent) {
-
-    }
 
     fun sendPubSubBroadcast(channelId: String, message: String) {
         val token = jwtService.generateSenderJwt(channelId)
