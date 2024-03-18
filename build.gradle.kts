@@ -24,7 +24,7 @@ repositories {
 dependencies {
     implementation("com.amazonaws:aws-java-sdk-dynamodb:1.12.681")
     implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
-    implementation("io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.3.3")
+    implementation("io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.4.4")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

@@ -91,7 +91,7 @@ jobs:
         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: velvet-control-server
-        environment_name: velvet-control-server-dev
+        environment_name: velvet-control-server-env
         version_label: ${{ steps.version.outputs.version }}
         region: us-east-2
         deployment_package: ./build/libs/VelvetControlServer-${{ steps.version.outputs.version }}.jar
