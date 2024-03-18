@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 class MenuController(private val actionRepo: ActionRepo) {
 
     @GetMapping("/commands/{channel}/{category}")
-    fun getCategoryActions(@PathVariable channel: String, @PathVariable category: String): ResponseEntity<*> {
+    fun getCategoryActions(@PathVariable channel: Int, @PathVariable category: String): ResponseEntity<*> {
         // Convert Action to ActionResponse to send less unnecessary data.
         val actions = actionRepo.findAllByChannelIdAndCategory(channel, category).map {
             ActionResponse(name = it.name, command = it.command, cooldown = it.cooldown, lastUse = it.lastUse, category = it.category)

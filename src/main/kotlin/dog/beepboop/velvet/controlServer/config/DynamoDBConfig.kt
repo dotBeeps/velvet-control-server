@@ -21,7 +21,7 @@ import org.springframework.context.annotation.*
 
 @EnableDynamoDBRepositories(basePackageClasses = [ActionRepo::class,UserRepo::class])
 @Configuration
-class DynamoDBConfig(@Value("\${aws.key}") private val awsKey: String, @Value("\${aws.secret}") private val awsSecret: String) {
+class DynamoDBConfig(@Value("\${aws.key}") private val awsKey: String?, @Value("\${aws.secret}") private val awsSecret: String?) {
 
     fun awsCredProvider(): AWSCredentialsProvider = AWSStaticCredentialsProvider(awsCredentials())
     @Bean

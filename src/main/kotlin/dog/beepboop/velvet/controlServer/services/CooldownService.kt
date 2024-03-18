@@ -10,7 +10,7 @@ import java.util.Date
 @Service
 class CooldownService(private val actionRepo: ActionRepo) {
 
-    fun getCooldown(channelId: String, category: String, name: String): Long {
+    fun getCooldown(channelId: Int, category: String, name: String): Long {
         val action = actionRepo.findByChannelIdAndCategoryAndCommand(channelId, category, name)
         action?.let {
             return it.cooldown - ((System.currentTimeMillis() - it.lastUse.time)/ 1000)
@@ -18,7 +18,7 @@ class CooldownService(private val actionRepo: ActionRepo) {
         return 0;
     }
 
-    fun setCooldown(channelId: String, category: String, name: String, command: String = "", cooldown: Int = 0) {
+    fun setCooldown(channelId: Int, category: String, name: String, command: String = "", cooldown: Int = 0) {
         actionRepo.findByChannelIdAndCategoryAndCommand(channelId, category, name)?.let {
             // Update existing command.
             actionRepo.save(it.copy(
@@ -33,14 +33,14 @@ class CooldownService(private val actionRepo: ActionRepo) {
                     category = category,
                     name = name,
                     command = command,
-                    script = Script("", mapOf()),
+                    script = Script(),
                     cooldown = cooldown
                 )
             )
         }
     }
 
-    fun setLastUse(channelId: String, category: String, command: String, lastUse: Date) {
+    fun setLastUse(channelId: Int, category: String, command: String, lastUse: Date) {
         actionRepo.findByChannelIdAndCategoryAndCommand(channelId, category, command)?.let {
             actionRepo.save(it.copy(lastUse = it.lastUse))
         }

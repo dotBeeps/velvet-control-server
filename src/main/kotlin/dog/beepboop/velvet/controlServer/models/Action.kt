@@ -9,10 +9,11 @@ import kotlinx.serialization.Serializable
 import java.util.Date
 
 @DynamoDBTable(tableName = "actions")
-data class Action(@DynamoDBHashKey
+data class Action(
+    @DynamoDBHashKey
     var id: String = "",
-    @DynamoDBAttribute
-    var channelId: String = "",
+    @DynamoDBAttribute(attributeName = "channel_id")
+    var channelId: Int = 0,
     @DynamoDBAttribute
     var category: String = "",
     @DynamoDBAttribute
@@ -22,6 +23,7 @@ data class Action(@DynamoDBHashKey
     @DynamoDBAttribute
     var cooldown: Int = 0,
     @DynamoDBAttribute
+    @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.M)
     var script: Script = Script(),
     @DynamoDBAttribute(attributeName = "last_use")
     @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.N)
@@ -33,6 +35,7 @@ data class Script (
     @DynamoDBAttribute
     var command: String = "",
     @DynamoDBAttribute
+    @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.M)
     var parameters: Map<String, Int> = mapOf()
 )
 data class ActionResponse (

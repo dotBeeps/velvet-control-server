@@ -14,26 +14,27 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @RestController
 class CommandController(val twitchService: TwitchService, val cooldownService: CooldownService, val actionRepo: ActionRepo) {
     private val logger = KotlinLogging.logger {}
 
     @PostMapping("/commands/{channel}/{category}/{command}")
-    fun invokeCommand(@PathVariable channel: String, @PathVariable category: String, @PathVariable command: String): ResponseEntity<*> {
+    fun invokeCommand(@PathVariable channel: Int, @PathVariable category: String, @PathVariable command: String): ResponseEntity<*> {
         if (cooldownService.getCooldown(channel,category,command) <= 0) {
             val action = actionRepo.findByChannelIdAndCategoryAndCommand(channel,category,command)
             action?.let {
-                val scriptStr = Json.encodeToString(action.script)
-                twitchService.sendPubSubBroadcast(channel, scriptStr)
+                val script = Json.encodeToString(action.script)
+                twitchService.sendPubSubBroadcast(channel.toString(), script)
                 cooldownService.setLastUse(channel,category,command, Date.from(Instant.now()))
                 val uiStr = Json.encodeToString(UIActionUpdate(
                     useTime = Instant.now().epochSecond,
                     category = it.category,
                     command = it.command
                 ))
-                logger.info { "Executing $scriptStr" }
-                twitchService.sendPubSubBroadcast(channel, uiStr)
+                logger.info { "Executing $script" }
+                twitchService.sendPubSubBroadcast(channel.toString(), uiStr)
                 return ResponseEntity.ok("Confirmed.")
             }
             return ResponseEntity("Couldn't find command.", HttpStatus.NOT_FOUND)
