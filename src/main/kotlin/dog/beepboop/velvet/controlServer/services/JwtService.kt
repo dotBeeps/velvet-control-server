@@ -12,9 +12,9 @@ import java.util.Base64
 import java.util.Date
 
 @Service
-class JwtService(@Value("\${twitchJwtSecret}") private val secretKeyString: String) {
+class JwtService(@Value("\${twitch.auth.client.id}") private val clientId: String, @Value("\${twitchJwtSecret}") private val clientSecret: String) {
 
-    private val decodedKey = Base64.getDecoder().decode(secretKeyString)
+    private val decodedKey = Base64.getDecoder().decode(clientSecret)
     private val secretKey = Keys.hmacShaKeyFor(decodedKey)
     private val serverTokenDuration = 30L
 
@@ -23,23 +23,31 @@ class JwtService(@Value("\${twitchJwtSecret}") private val secretKeyString: Stri
         return jwt
     }
 
-    fun generateSenderJwt(channelId: String): String {
-        val jwt = Jwts.builder()
-            .expiration(Date.from(Instant.now().plusSeconds(serverTokenDuration)))
-            .claim("channel_id", channelId)
-            .claim("role", "external")
-            .claim("pubsub_perms", mapOf("send" to arrayOf("*")))
-            .signWith(secretKey, Jwts.SIG.HS256)
-            .compact()
-        return jwt;
+    fun generateAdminSenderJwt(channelId: String): String {
+        return generateJwt(channelId, mapOf("send" to arrayOf("*")))
     }
 
     fun generateListenerJwt(channelId: String): String {
+        return generateJwt(channelId, mapOf("listen" to arrayOf("broadcast")))
+    }
+
+    fun generateModJwt(channelId: String): String {
+        return generateJwt(channelId, mapOf("send" to arrayOf("broadcast"), "listen" to arrayOf("broadcast")))
+    }
+
+    fun verifyJwt(token: String): Boolean = Jwts.parser().verifyWith(secretKey).build().isSigned(token)
+
+    fun getJwtClaims(token: String): Claims {
+        val claims = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token)
+        return claims.payload
+    }
+
+    fun generateJwt(channelId: String, perms: Map<String,Array<String>>): String {
         val jwt = Jwts.builder()
             .expiration(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
             .claim("channel_id", channelId)
             .claim("role", "external")
-            .claim("pubsub_perms", mapOf("listen" to arrayOf("broadcast")))
+            .claim("pubsub_perms", perms)
             .signWith(secretKey, Jwts.SIG.HS256)
             .compact()
         return jwt;

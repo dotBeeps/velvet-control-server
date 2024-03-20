@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 **/build/
+build/**
 
 **/application-local.properties
 
@@ -37,3 +38,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/.gradle/

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootWar
 
 plugins {
     id("org.springframework.boot") version "3.2.3"
@@ -26,7 +27,10 @@ dependencies {
     implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
     implementation("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0")
     implementation("io.awspring.cloud:spring-cloud-aws-starter-secrets-manager:3.1.0")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
@@ -42,6 +46,12 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-jackson:0.12.5")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+tasks.withType<BootWar> {
+    from("src/main/resources/ebextensions") {
+        into(".ebextensions")
+    }
 }
 
 tasks.withType<KotlinCompile> {
