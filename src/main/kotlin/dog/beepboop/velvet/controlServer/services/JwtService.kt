@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -40,6 +41,15 @@ class JwtService(@Value("\${twitch.auth.client.id}") private val clientId: Strin
     fun getJwtClaims(token: String): Claims {
         val claims = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token)
         return claims.payload
+    }
+
+    fun getJwtClaims(token: Jwt): Claims {
+        val claims = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token.readPublicKey())
+        return claims.payload
+    }
+
+    fun getUserIdFromJwt(token: Jwt): String {
+        return getJwtClaims(token)["user_token"] as String
     }
 
     fun generateJwt(channelId: String, perms: Map<String,Array<String>>): String {

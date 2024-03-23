@@ -14,7 +14,7 @@ class AuthController(private val twitchService: TwitchService, private val jwtSe
     fun getJwtTokenFromAuthCode(@RequestParam code: String): ResponseEntity<*> {
         val token = twitchService.getTwitchTokenFromAuthCode(code)
         val channel = twitchService.getChannelIdFromBearer(token.accessToken)
-        val jwt = jwtService.generateModJwt(code)
+        val jwt = jwtService.generateModJwt(channel)
         return ResponseEntity(mapOf(jwt to "token"), HttpStatus.OK)
     }
 }

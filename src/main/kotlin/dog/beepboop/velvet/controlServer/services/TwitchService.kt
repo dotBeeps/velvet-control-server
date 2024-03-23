@@ -2,7 +2,10 @@ package dog.beepboop.velvet.controlServer.services
 
 import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.helix.domain.SendPubSubMessageInput
-import dog.beepboop.velvet.controlServer.models.TwitchAuthToken
+import dog.beepboop.velvet.controlServer.models.*
+import dog.beepboop.velvet.controlServer.repositories.CommandRepository
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -15,7 +18,8 @@ import org.springframework.web.client.postForObject
 class TwitchService(
     private val jwtService: JwtService,
     @Value("\${twitch.auth.client.id}") private val clientId: String,
-    @Value("\${twitchClientSecret}") private val clientSecret: String
+    @Value("\${twitchClientSecret}") private val clientSecret: String,
+    private val commandRepo: CommandRepository
 ) {
     private val logger = KotlinLogging.logger {}
     private val twitchClient = TwitchClientBuilder.builder()
@@ -24,6 +28,15 @@ class TwitchService(
         .withClientId(clientId)
         .withClientSecret(clientSecret)
         .build()
+
+    fun broadcastCommand(command: CommandEntry) {
+        val token = jwtService.generateAdminSenderJwt(command.channelId.toString())
+        val pubSubCommand = PubSubCommand(command.channelId.toString(),command.parameters,command.duration)
+        val commandJsonStr = Json.encodeToString(pubSubCommand)
+        val pubSubMessage = SendPubSubMessageInput(listOf("broadcast"), command.channelId.toString(), false, commandJsonStr)
+        logger.info { "Broadcasting ${command.getCommandId()}" }
+        twitchClient.helix.sendExtensionPubSubMessage(token,clientId,pubSubMessage).execute()
+    }
 
     fun sendPubSubBroadcast(channelId: String, message: String) {
         val token = jwtService.generateAdminSenderJwt(channelId)

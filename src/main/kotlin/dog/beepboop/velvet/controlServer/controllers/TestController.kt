@@ -14,9 +14,4 @@ class TestController(val twitchService: TwitchService, val jwtService: JwtServic
     fun broadcast(@RequestBody body: String) {
         twitchService.sendPubSubBroadcast("127844855", body)
     }
-
-    @GetMapping("/clienttoken")
-    fun getClientToken(@RequestParam channelId: String): String {
-        return jwtService.generateListenerJwt(channelId)
-    }
 }

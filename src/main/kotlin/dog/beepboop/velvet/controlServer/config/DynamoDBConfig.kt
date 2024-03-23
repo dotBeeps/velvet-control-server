@@ -10,13 +10,13 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig
-import dog.beepboop.velvet.controlServer.repositories.CommandRepo
-import dog.beepboop.velvet.controlServer.repositories.UserRepo
+import dog.beepboop.velvet.controlServer.repositories.CommandRepository
+import dog.beepboop.velvet.controlServer.repositories.ChannelRepo
 import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.*
 
-@EnableDynamoDBRepositories(basePackageClasses = [CommandRepo::class,UserRepo::class])
+@EnableDynamoDBRepositories(basePackageClasses = [CommandRepository::class,ChannelRepo::class])
 @Configuration
 class DynamoDBConfig(@Value("\${aws.key}") private val awsKey: String?, @Value("\${aws.secret}") private val awsSecret: String?) {
 
